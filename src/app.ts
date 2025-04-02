@@ -11,6 +11,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'https://kasbu.com',
   'https://www.kasbu.com',
+  'https://kasbu-wallet.vercel.app',
+  'https://kasbu-wallet-git-main.vercel.app',
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
