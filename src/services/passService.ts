@@ -8,67 +8,52 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.join(__dirname, '..', '..');
 
 export class PassService {
-  private readonly certDir: string;
   private readonly modelPath: string;
 
   constructor() {
-    this.certDir = path.join(ROOT_DIR, 'certificates');
     this.modelPath = path.join(ROOT_DIR, 'pass-model');
   }
 
   async generatePass(username: string): Promise<Buffer> {
     try {
-      // Leer los certificados
-      const signerCert = await fs.readFile(path.join(this.certDir, 'signerCert.pem'));
-      const signerKey = await fs.readFile(path.join(this.certDir, 'signerKey.pem'));
-      const wwdr = await fs.readFile(path.join(this.certDir, 'wwdr.pem'));
+      // Obtener certificados desde variables de entorno
+      const signerCert = process.env.SIGNER_CERT;
+      const signerKey = process.env.SIGNER_KEY;
+      const wwdr = process.env.WWDR_CERT;
 
-      // Leer el modelo base del pase
-      const modelJson = JSON.parse(
-        await fs.readFile(path.join(this.modelPath, 'pass.json'), 'utf-8')
-      );
-
-      // Actualizar los campos dinámicos del modelo
-      modelJson.serialNumber = `kasbu-${username}-${Date.now()}`;
-      modelJson.description = `Kasbu Card para ${username}`;
-      modelJson.generic.primaryFields[0].value = username;
-      modelJson.generic.secondaryFields[0].value = `kasbu.com/${username}`;
-      modelJson.barcodes[0].message = `kasbu.com/${username}`;
-
-      // Escribir el modelo actualizado temporalmente
-      const tempModelPath = path.join(this.modelPath, 'temp.pass');
-      await fs.mkdir(tempModelPath, { recursive: true });
-      await fs.writeFile(
-        path.join(tempModelPath, 'pass.json'),
-        JSON.stringify(modelJson, null, 2)
-      );
-
-      // Copiar las imágenes al modelo temporal
-      const images = ['icon.png', 'icon@2x.png'];
-      for (const image of images) {
-        await fs.copyFile(
-          path.join(this.modelPath, image),
-          path.join(tempModelPath, image)
-        );
+      if (!signerCert || !signerKey || !wwdr) {
+        throw new Error('Certificados no configurados');
       }
 
       // Crear el pase
-      const pass = await PKPass.from({
-        model: tempModelPath,
+      const pass = new PKPass({
         certificates: {
-          wwdr,
-          signerCert,
-          signerKey
-        }
+          wwdr: Buffer.from(wwdr),
+          signerCert: Buffer.from(signerCert),
+          signerKey: Buffer.from(signerKey)
+        },
+        passTypeIdentifier: process.env.PASS_TYPE_IDENTIFIER || 'pass.com.kasbu.card',
+        teamIdentifier: process.env.TEAM_IDENTIFIER || 'VGYZRF6G9C',
+        serialNumber: `kasbu-${username}-${Date.now()}`,
+        description: `Kasbu Card para ${username}`,
+        organizationName: 'Kasbu'
+      });
+
+      // Configurar el código de barras
+      pass.setBarcodes({
+        message: `kasbu.com/${username}`,
+        format: 'PKBarcodeFormatQR',
+        messageEncoding: 'iso-8859-1',
+      });
+
+      // Localización en español
+      pass.localize('es', {
+        'PASS_HEADER': 'Kasbu',
+        'PASS_TITLE': `Kasbu de ${username}`,
       });
 
       // Generar el pase
-      const buffer = await pass.getAsBuffer();
-
-      // Limpiar el directorio temporal
-      await fs.rm(tempModelPath, { recursive: true, force: true });
-
-      return buffer;
+      return await pass.getAsBuffer();
     } catch (error) {
       console.error('Error generando el pase de Apple Wallet:', error);
       throw new Error('No se pudo generar el pase de Apple Wallet');
