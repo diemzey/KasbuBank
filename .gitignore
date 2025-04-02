@@ -2,7 +2,7 @@ node_modules/
 .env
 dist/
 .DS_Store
-certificates/*.pem
-certificates/*.cer
-certificates/*.p12
-certificates/*.certSigningRequest 
+# certificates/*.pem
+# certificates/*.cer
+# certificates/*.p12
+# certificates/*.certSigningRequest 
