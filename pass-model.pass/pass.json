@@ -13,20 +13,20 @@
       {
         "key": "username",
         "label": "Usuario",
-        "value": "test-user"
+        "value": "placeholder"
       }
     ],
     "secondaryFields": [
       {
         "key": "url",
         "label": "URL",
-        "value": "kasbu.com/test-user"
+        "value": "kasbu.com/placeholder"
       }
     ]
   },
   "barcodes": [
     {
-      "message": "kasbu.com/test-user",
+      "message": "kasbu.com/placeholder",
       "format": "PKBarcodeFormatQR",
       "messageEncoding": "iso-8859-1"
     }
