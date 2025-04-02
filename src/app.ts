@@ -1,7 +1,7 @@
 import express from 'express';
 import type { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import passRoutes from './routes/passRoutes.ts';
+import passRoutes from './routes/passRoutes.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

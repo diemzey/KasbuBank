@@ -1,9 +1,8 @@
-import { Router } from 'express';
-import { PassController } from '../controllers/passController.ts';
+import express from 'express';
+import { generatePass } from '../controllers/passController.js';
 
-const router = Router();
-const passController = new PassController();
+const router = express.Router();
 
-router.get('/pass/:username', passController.generatePass);
+router.get('/pass/:username', generatePass);
 
 export default router; 
