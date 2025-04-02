@@ -13,7 +13,7 @@ export class PassService {
 
   constructor() {
     this.certDir = path.join(ROOT_DIR, 'certificates');
-    this.modelPath = path.join(ROOT_DIR, 'pass-model');
+    this.modelPath = path.join(ROOT_DIR, 'pass-model.pass');
   }
 
   async generatePass(username: string): Promise<Buffer> {
